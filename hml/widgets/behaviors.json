@@ -1,0 +1,1 @@
+{"total":2,"items":[{"uid":"c98d57a3a9d8557b225cabada81e33f2","name":"Smoke test da home da Kabum","statistic":{"failed":0,"broken":0,"skipped":0,"passed":1,"unknown":0,"total":1}},{"uid":"f13991e109f68ffc6aaaf47bb765b458","name":"Cadastro completo pela home da Kabum","statistic":{"failed":0,"broken":0,"skipped":1,"passed":0,"unknown":0,"total":1}}]}
