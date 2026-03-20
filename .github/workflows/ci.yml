@@ -50,15 +50,29 @@ jobs:
       - name: Run tests
         run: mvn -B clean test -Dheadless=true
 
-      - name: Validate Allure results
+      - name: Check Allure results
+        if: always()
+        id: allure-results
+        env:
+          IS_HML_TARGET: ${{ github.ref_name == 'hml' || github.base_ref == 'hml' }}
         run: |
-          test -d allure-results
-          test "$(find allure-results -type f | wc -l)" -gt 0
+          if [ -d allure-results ] && [ "$(find allure-results -type f | wc -l)" -gt 0 ]; then
+            echo "has_results=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_results=false" >> "$GITHUB_OUTPUT"
+            if [ "$IS_HML_TARGET" = "true" ]; then
+              echo "Allure results are mandatory for hml."
+              exit 1
+            fi
+            echo "No Allure results were generated; skipping report generation."
+          fi
 
       - name: Install Allure
+        if: always() && steps.allure-results.outputs.has_results == 'true'
         run: npm install -g allure-commandline --save-dev
 
       - name: Generate Allure report
+        if: always() && steps.allure-results.outputs.has_results == 'true'
         run: allure generate allure-results --clean -o allure-report
 
       - name: Upload Surefire reports
@@ -70,7 +84,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload Allure results
-        if: always()
+        if: always() && steps.allure-results.outputs.has_results == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: allure-results
@@ -78,7 +92,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload Allure report
-        if: always()
+        if: always() && steps.allure-results.outputs.has_results == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: allure-report
@@ -87,7 +101,7 @@ jobs:
           retention-days: 14
 
       - name: Deploy main report to GitHub Pages
-        if: github.event_name == 'push' && github.ref_name == 'main'
+        if: github.event_name == 'push' && github.ref_name == 'main' && steps.allure-results.outputs.has_results == 'true'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -96,7 +110,7 @@ jobs:
           keep_files: true
 
       - name: Deploy hml report to GitHub Pages
-        if: github.event_name == 'push' && github.ref_name == 'hml'
+        if: github.event_name == 'push' && github.ref_name == 'hml' && steps.allure-results.outputs.has_results == 'true'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
