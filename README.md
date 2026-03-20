@@ -91,3 +91,7 @@ O relatorio so fica disponivel depois que a pipeline concluir com sucesso e publ
 - ***o cenario protegido de login/cadastro pode ficar como `SKIPPED`***
 - ***quando isso acontecer, o motivo esperado e `Blocked by CAPTCHA / anti-bot`***
 - ***o fluxo protegido pode oscilar conforme a camada de seguranca da KaBuM***
+
+## Link do video da Execucao do Projeto
+
+- APERTE O PLAY: https://www.loom.com/share/688f748acea64850b233f2c78c2c8f1a
