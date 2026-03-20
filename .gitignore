@@ -1,0 +1,7 @@
+allure-results/
+.allure/
+target/site/allure-maven-plugin/
+target/
+*.class
+*.log
+tmp_*.html
