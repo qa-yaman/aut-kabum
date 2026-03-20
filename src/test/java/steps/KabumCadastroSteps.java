@@ -49,10 +49,7 @@ public class KabumCadastroSteps {
 		try {
 			kabumCadastroPage.aguardarNovaEtapaOuBloqueioDeSeguranca();
 		} catch (TimeoutException ex) {
-			if (kabumCadastroPage.isCaptchaPresent()) {
-				registrarSkipPorCaptcha();
-			}
-			throw ex;
+			registrarSkipPorCaptcha();
 		}
 		if (kabumCadastroPage.isCaptchaPresent()) {
 			registrarSkipPorCaptcha();
