@@ -58,7 +58,6 @@ allure serve allure-results
 [![CI](https://github.com/qa-yaman/aut-kabum/actions/workflows/ci.yml/badge.svg?branch=main "Relatorio Automacao")](https://github.com/qa-yaman/aut-kabum/actions/workflows/ci.yml)
 
 - Workflow: `CI + Allure Report Deploy`
-- Relatorio principal: [https://qa-yaman.github.io/aut-kabum/](https://qa-yaman.github.io/aut-kabum/)
 - Relatorio da branch hml: [https://qa-yaman.github.io/aut-kabum/hml/](https://qa-yaman.github.io/aut-kabum/hml/)
 
 ## Como o CI funciona
