@@ -6,16 +6,20 @@ import io.cucumber.java.pt.Dado;
 import io.cucumber.java.pt.Entao;
 import io.cucumber.java.pt.Quando;
 import pages.KabumBuscaPage;
-import runner.RunCucumberTest;
+import steps.context.DriverContext;
 
 public class KabumBuscaSteps {
+	private final DriverContext driverContext;
 
 	private KabumBuscaPage kabumBuscaPage;
 
+	public KabumBuscaSteps(DriverContext driverContext) {
+		this.driverContext = driverContext;
+	}
+
 	@Dado("que acesso a home da Kabum para realizar uma busca")
 	public void queAcessoAHomeDaKabumParaRealizarUmaBusca() {
-		assertNotNull(RunCucumberTest.driver, "WebDriver nao foi inicializado.");
-		kabumBuscaPage = new KabumBuscaPage(RunCucumberTest.driver);
+		kabumBuscaPage = new KabumBuscaPage(driverContext.getDriver());
 		kabumBuscaPage.abrirHome();
 	}
 
