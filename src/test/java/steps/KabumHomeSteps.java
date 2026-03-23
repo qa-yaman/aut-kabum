@@ -3,17 +3,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import io.cucumber.java.pt.Dado;
 import io.cucumber.java.pt.Entao;
-import runner.RunCucumberTest;
 import pages.KabumHomePage;
+import steps.context.DriverContext;
 
 public class KabumHomeSteps {
+	private final DriverContext driverContext;
 
 	private KabumHomePage kabumHomePage;
 
+	public KabumHomeSteps(DriverContext driverContext) {
+		this.driverContext = driverContext;
+	}
+
 	@Dado("que acesso o site da Kabum")
 	public void queAcessoOSiteDaKabum() {
-		assertNotNull(RunCucumberTest.driver, "WebDriver nao foi inicializado.");
-		kabumHomePage = new KabumHomePage(RunCucumberTest.driver);
+		kabumHomePage = new KabumHomePage(driverContext.getDriver());
 		kabumHomePage.abrirHome();
 	}
 
