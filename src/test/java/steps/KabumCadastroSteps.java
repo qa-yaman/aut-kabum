@@ -1,16 +1,14 @@
 package steps;
 
 import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import org.junit.AssumptionViolatedException;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.openqa.selenium.TimeoutException;
-
-import io.qameta.allure.Allure;
 import io.cucumber.java.pt.Dado;
 import io.cucumber.java.pt.E;
 import io.cucumber.java.pt.Entao;
 import io.cucumber.java.pt.Quando;
+import io.qameta.allure.Allure;
 import pages.KabumCadastroPage;
 import runner.RunCucumberTest;
 
@@ -118,12 +116,13 @@ public class KabumCadastroSteps {
 		kabumCadastroPage.aguardarEtapaEnderecoPorCep();
 		kabumCadastroPage.preencherCep(cep);
 		kabumCadastroPage.clicarEmConfirmar();
+		kabumCadastroPage.aguardarEtapaNumeroEndereco();
 	}
 
 	@E("informo o numero {string} e complemento {string} e clico em confirmar")
 	public void informoONumeroEComplementoEClicoEmConfirmar(String numero, String complemento) {
 		garantirPageInicializada();
-		kabumCadastroPage.aguardarEtapaEnderecoPorCep();
+		kabumCadastroPage.aguardarEtapaNumeroEndereco();
 		kabumCadastroPage.preencherNumero(numero);
 		kabumCadastroPage.preencherComplemento(complemento);
 		kabumCadastroPage.clicarEmConfirmar();
