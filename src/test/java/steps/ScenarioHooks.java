@@ -1,31 +1,26 @@
 package steps;
 
 import java.io.ByteArrayInputStream;
-
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
-
 import io.cucumber.java.After;
-import io.cucumber.java.AfterAll;
-import io.cucumber.java.BeforeAll;
+import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
 import io.qameta.allure.Allure;
-import runner.RunCucumberTest;
+import steps.context.DriverContext;
 
 public class ScenarioHooks {
+	private final DriverContext driverContext;
 
-	@BeforeAll
-	public static void inicializarDriver() {
-		if (RunCucumberTest.driver == null) {
-			RunCucumberTest.start();
-		}
+	public ScenarioHooks(DriverContext driverContext) {
+		this.driverContext = driverContext;
 	}
 
-	@AfterAll
-	public static void finalizarDriver() {
-		RunCucumberTest.stop();
+	@Before(order = 0)
+	public void iniciarDriver() {
+		driverContext.start();
 	}
 
 	@After(order = 1)
@@ -34,7 +29,14 @@ public class ScenarioHooks {
 			return;
 		}
 
-		WebDriver driver = RunCucumberTest.driver;
+		WebDriver driver;
+		try {
+			driver = driverContext.getDriver();
+		} catch (IllegalStateException exception) {
+			Allure.addAttachment("screenshot_error", "Driver nao foi inicializado para o cenario.");
+			return;
+		}
+
 		if (!(driver instanceof TakesScreenshot)) {
 			Allure.addAttachment("screenshot_error", "Driver atual nao suporta captura de screenshot.");
 			return;
@@ -56,6 +58,11 @@ public class ScenarioHooks {
 					"Falha ao capturar screenshot: " + exception.getMessage()
 			);
 		}
+	}
+
+	@After(order = 0)
+	public void finalizarDriver() {
+		driverContext.stop();
 	}
 
 	private String safeCurrentUrl(WebDriver driver) {
