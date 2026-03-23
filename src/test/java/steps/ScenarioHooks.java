@@ -1,16 +1,32 @@
 package steps;
 
 import java.io.ByteArrayInputStream;
-import io.cucumber.java.After;
-import io.cucumber.java.Scenario;
-import io.qameta.allure.Allure;
+
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
+
+import io.cucumber.java.After;
+import io.cucumber.java.AfterAll;
+import io.cucumber.java.BeforeAll;
+import io.cucumber.java.Scenario;
+import io.qameta.allure.Allure;
 import runner.RunCucumberTest;
 
 public class ScenarioHooks {
+
+	@BeforeAll
+	public static void inicializarDriver() {
+		if (RunCucumberTest.driver == null) {
+			RunCucumberTest.start();
+		}
+	}
+
+	@AfterAll
+	public static void finalizarDriver() {
+		RunCucumberTest.stop();
+	}
 
 	@After(order = 1)
 	public void anexarScreenshotEmFalha(Scenario scenario) {
