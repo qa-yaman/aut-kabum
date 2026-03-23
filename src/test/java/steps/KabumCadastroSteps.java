@@ -11,15 +11,19 @@ import io.cucumber.java.pt.Entao;
 import io.cucumber.java.pt.Quando;
 import io.qameta.allure.Allure;
 import pages.KabumCadastroPage;
-import runner.RunCucumberTest;
+import steps.context.DriverContext;
 
 public class KabumCadastroSteps {
+	private final DriverContext driverContext;
 	private KabumCadastroPage kabumCadastroPage;
+
+	public KabumCadastroSteps(DriverContext driverContext) {
+		this.driverContext = driverContext;
+	}
 
 	@Dado("que acesso a home da Kabum")
 	public void queAcessoAHomeDaKabum() {
-		assertNotNull(RunCucumberTest.driver, "WebDriver nao foi inicializado.");
-		kabumCadastroPage = new KabumCadastroPage(RunCucumberTest.driver);
+		kabumCadastroPage = new KabumCadastroPage(driverContext.getDriver());
 		kabumCadastroPage.abrirHome();
 		kabumCadastroPage.aguardarHomeCarregada();
 	}
