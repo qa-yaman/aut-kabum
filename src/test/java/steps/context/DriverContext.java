@@ -14,6 +14,8 @@ public class DriverContext {
 	private static final Duration PAGE_LOAD_TIMEOUT = Duration.ofSeconds(45);
 	private static final Duration IMPLICIT_WAIT_TIMEOUT = Duration.ofSeconds(3);
 	private static final String DEFAULT_LANGUAGE = "pt-BR";
+	private static final Object CHROMEDRIVER_SETUP_LOCK = new Object();
+	private static volatile boolean CHROMEDRIVER_CONFIGURADO;
 
 	private WebDriver driver;
 
@@ -22,7 +24,7 @@ public class DriverContext {
 			return;
 		}
 
-		WebDriverManager.chromedriver().setup();
+		garantirChromedriverConfigurado();
 		driver = new ChromeDriver(createChromeOptions());
 		configureDriver(driver);
 	}
@@ -84,5 +86,18 @@ public class DriverContext {
 	private void configureDriver(WebDriver webDriver) {
 		webDriver.manage().timeouts().pageLoadTimeout(PAGE_LOAD_TIMEOUT);
 		webDriver.manage().timeouts().implicitlyWait(IMPLICIT_WAIT_TIMEOUT);
+	}
+
+	private static void garantirChromedriverConfigurado() {
+		if (CHROMEDRIVER_CONFIGURADO) {
+			return;
+		}
+
+		synchronized (CHROMEDRIVER_SETUP_LOCK) {
+			if (!CHROMEDRIVER_CONFIGURADO) {
+				WebDriverManager.chromedriver().setup();
+				CHROMEDRIVER_CONFIGURADO = true;
+			}
+		}
 	}
 }
