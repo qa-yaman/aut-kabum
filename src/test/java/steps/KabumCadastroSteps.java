@@ -1,9 +1,10 @@
 package steps;
 
-import static org.junit.Assert.assertTrue;
-import org.junit.AssumptionViolatedException;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.openqa.selenium.TimeoutException;
+import org.opentest4j.TestAbortedException;
+
 import io.cucumber.java.pt.Dado;
 import io.cucumber.java.pt.E;
 import io.cucumber.java.pt.Entao;
@@ -34,8 +35,8 @@ public class KabumCadastroSteps {
 		garantirPageInicializada();
 		kabumCadastroPage.aguardarPopupAutenticacao();
 		assertTrue(
-				"O popup de autenticacao da KaBuM nao apareceu.",
-				kabumCadastroPage.isPopupAutenticacaoVisivel()
+				kabumCadastroPage.isPopupAutenticacaoVisivel(),
+				"O popup de autenticacao da KaBuM nao apareceu."
 		);
 	}
 
@@ -141,6 +142,6 @@ public class KabumCadastroSteps {
 	private void registrarSkipPorCaptcha() {
 		Allure.step("Blocked by CAPTCHA / anti-bot");
 		Allure.addAttachment("skip_reason", "Blocked by CAPTCHA / anti-bot");
-		throw new AssumptionViolatedException("Blocked by CAPTCHA / anti-bot");
+		throw new TestAbortedException("Blocked by CAPTCHA / anti-bot");
 	}
 }
