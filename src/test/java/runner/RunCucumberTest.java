@@ -3,7 +3,6 @@ package runner;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -11,7 +10,6 @@ import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-
 import io.cucumber.junit.Cucumber;
 import io.cucumber.junit.CucumberOptions;
 import io.github.bonigarcia.wdm.WebDriverManager;
@@ -73,18 +71,20 @@ public class RunCucumberTest {
 
 	private static Map<String, Object> createChromePreferences() {
 		Map<String, Object> preferences = new HashMap<>();
-		preferences.put("profile.managed_default_content_settings.images", 2);
 		preferences.put("profile.default_content_setting_values.notifications", 2);
 		return preferences;
 	}
 
 	private static boolean isHeadlessEnabled() {
-		return Boolean.parseBoolean(System.getProperty("headless", "true"));
+		if (Boolean.parseBoolean(System.getProperty("headed", "false"))) {
+			return false;
+		}
+
+		return Boolean.parseBoolean(System.getProperty("headless", "false"));
 	}
 
 	private static void configureDriver(WebDriver webDriver) {
 		webDriver.manage().timeouts().pageLoadTimeout(PAGE_LOAD_TIMEOUT);
 		webDriver.manage().timeouts().implicitlyWait(IMPLICIT_WAIT_TIMEOUT);
-		webDriver.manage().deleteAllCookies();
 	}
 }
