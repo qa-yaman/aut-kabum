@@ -11,6 +11,7 @@ import io.cucumber.java.pt.Quando;
 import io.qameta.allure.Allure;
 import pages.KabumCadastroPage;
 import steps.context.DriverContext;
+import steps.context.SensitiveDataResolver;
 
 public class KabumCadastroSteps {
 	private final DriverContext driverContext;
@@ -46,7 +47,7 @@ public class KabumCadastroSteps {
 	@Quando("informo o email {string} no popup e clico em entrar")
 	public void informoOEmailNoPopupEClicoEmEntrar(String email) {
 		garantirPageInicializada();
-		kabumCadastroPage.preencherEmailNoPopup(email);
+		kabumCadastroPage.preencherEmailNoPopup(SensitiveDataResolver.resolve(email));
 		kabumCadastroPage.clicarEmEntrarNoPopup();
 		try {
 			kabumCadastroPage.aguardarNovaEtapaOuBloqueioDeSeguranca();
@@ -88,12 +89,12 @@ public class KabumCadastroSteps {
 			String senha
 	) {
 		garantirPageInicializada();
-		kabumCadastroPage.preencherEmailCadastro(email);
-		kabumCadastroPage.preencherCpf(cpf);
+		kabumCadastroPage.preencherEmailCadastro(SensitiveDataResolver.resolve(email));
+		kabumCadastroPage.preencherCpf(SensitiveDataResolver.resolve(cpf));
 		kabumCadastroPage.preencherCelular(celular);
 		kabumCadastroPage.preencherDataNascimento(dataNascimento);
 		kabumCadastroPage.preencherNomeCompleto(nomeCompleto);
-		kabumCadastroPage.preencherSenha(senha);
+		kabumCadastroPage.preencherSenha(SensitiveDataResolver.resolve(senha));
 	}
 
 	@E("marco o checkbox Li e estou de acordo")
@@ -118,7 +119,7 @@ public class KabumCadastroSteps {
 	public void informoOCepEClicoEmConfirmar(String cep) {
 		garantirPageInicializada();
 		kabumCadastroPage.aguardarEtapaEnderecoPorCep();
-		kabumCadastroPage.preencherCep(cep);
+		kabumCadastroPage.preencherCep(SensitiveDataResolver.resolve(cep));
 		kabumCadastroPage.clicarEmConfirmar();
 		kabumCadastroPage.aguardarEtapaNumeroEndereco();
 	}
