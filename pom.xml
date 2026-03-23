@@ -14,6 +14,9 @@
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<skip.open.allure>false</skip.open.allure>
+		<cucumber.parallel.enabled>true</cucumber.parallel.enabled>
+		<cucumber.parallel.strategy>fixed</cucumber.parallel.strategy>
+		<cucumber.parallelism>2</cucumber.parallelism>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -76,6 +79,12 @@
 				<version>3.2.5</version>
 				<configuration>
 					<argLine>--add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.desktop/java.awt.font=ALL-UNNAMED</argLine>
+					<systemPropertyVariables>
+						<cucumber.execution.parallel.enabled>${cucumber.parallel.enabled}</cucumber.execution.parallel.enabled>
+						<cucumber.execution.parallel.config.strategy>${cucumber.parallel.strategy}</cucumber.execution.parallel.config.strategy>
+						<cucumber.execution.parallel.config.fixed.parallelism>${cucumber.parallelism}</cucumber.execution.parallel.config.fixed.parallelism>
+						<cucumber.execution.parallel.config.fixed.max-pool-size>${cucumber.parallelism}</cucumber.execution.parallel.config.fixed.max-pool-size>
+					</systemPropertyVariables>
 				</configuration>
 			</plugin>
 			<plugin>
