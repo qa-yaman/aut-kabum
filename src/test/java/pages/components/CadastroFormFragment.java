@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Locale;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.ElementClickInterceptedException;
 import org.openqa.selenium.JavascriptExecutor;
@@ -85,7 +86,7 @@ public class CadastroFormFragment {
 
 	public void selecionarOpcaoCpf() {
 		if (!clicarPrimeiroDisponivel(OPCAO_CPF)) {
-			clicarElementoPorTexto("cadastrar cpf", "cpf");
+			clicarFallbackPorTexto("cadastrar cpf", "cpf");
 		}
 	}
 
@@ -139,7 +140,7 @@ public class CadastroFormFragment {
 
 	public void clicarEmContinuarNoCadastro() {
 		if (!clicarPrimeiroDisponivel(BOTAO_CONTINUAR)) {
-			clicarElementoPorTexto("continuar");
+			clicarFallbackPorTexto("continuar");
 		}
 	}
 
@@ -157,7 +158,7 @@ public class CadastroFormFragment {
 
 	public void clicarEmConfirmar() {
 		if (!clicarPrimeiroDisponivel(BOTAO_CONFIRMAR)) {
-			clicarElementoPorTexto("confirmar");
+			clicarFallbackPorTexto("confirmar");
 		}
 	}
 
@@ -273,7 +274,7 @@ public class CadastroFormFragment {
 		);
 	}
 
-	private void clicarElementoPorTexto(String... textosEsperados) {
+	private void clicarFallbackPorTexto(String... textosEsperados) {
 		List<WebElement> elementos = driver.findElements(ELEMENTOS_CLICAVEIS);
 
 		for (WebElement elemento : elementos) {
