@@ -2,11 +2,11 @@ package pages;
 
 import java.text.Normalizer;
 import java.time.LocalDate;
-import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Locale;
+import helpers.WaitFactory;
 import org.openqa.selenium.By;
 import org.openqa.selenium.ElementClickInterceptedException;
 import org.openqa.selenium.JavascriptExecutor;
@@ -52,10 +52,12 @@ public class KabumCadastroPage {
 
 	private final WebDriver driver;
 	private final WebDriverWait wait;
+	private final WebDriverWait waitLong;
 
 	public KabumCadastroPage(WebDriver driver) {
 		this.driver = driver;
-		this.wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+		this.wait = WaitFactory.explicit(driver);
+		this.waitLong = WaitFactory.explicitLong(driver);
 	}
 
 	public void abrirHome() {
@@ -222,14 +224,14 @@ public class KabumCadastroPage {
 
 	public void aguardarMensagemSucesso(String mensagemEsperada) {
 		String mensagemNormalizada = normalizar(mensagemEsperada);
-		new WebDriverWait(driver, Duration.ofSeconds(20)).until(d -> {
+		waitLong.until(d -> {
 			String texto = obterTextoDaPaginaNormalizado();
 			return texto.contains(mensagemNormalizada) || texto.contains("usuario cadastrado com sucesso");
 		});
 	}
 
 	public void aguardarAvancoDaEtapaDeCadastro() {
-		new WebDriverWait(driver, Duration.ofSeconds(15)).until(d -> {
+		wait.until(d -> {
 			String texto = obterTextoDaPaginaNormalizado();
 			return texto.contains("cep")
 					|| texto.contains("endereco")
