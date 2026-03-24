@@ -144,6 +144,31 @@ jobs:
 
           echo "Lint guard OK: nenhum implicit wait encontrado."
 
+      - name: Lint guard - resilient locators policy
+        run: |
+          set -euo pipefail
+
+          TARGET_BRANCH="${GITHUB_BASE_REF:-$GITHUB_REF_NAME}"
+          ROOT="src/test/java/pages"
+
+          if [ "$TARGET_BRANCH" != "hml" ]; then
+            echo "Policy de locators resilientes habilitada apenas para a branch hml. Branch atual: '$TARGET_BRANCH'."
+            exit 0
+          fi
+
+          # Regra: priorizar data-testid e evitar seletores por texto solto/XPath textual.
+          # Excecao: incluir comentario "LOCATOR_ALLOW_TEXT" na mesma linha para casos justificados.
+          MATCHES=$(grep -RInE "By\.xpath\(|clicarElementoPorTexto\(" "$ROOT" | grep -v "LOCATOR_ALLOW_TEXT" || true)
+
+          if [ -n "$MATCHES" ]; then
+            echo "::warning::Locators potencialmente frageis encontrados (texto solto/XPath):"
+            echo "$MATCHES"
+            echo "::error::Policy de locators resilientes violada na branch hml. Use data-testid como prioridade."
+            exit 1
+          else
+            echo "Lint guard OK: nenhum locator fragil detectado em $ROOT."
+          fi
+
       - name: Check Chrome availability
         run: |
           google-chrome --version || chromium-browser --version || chromium --version
