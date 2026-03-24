@@ -5,7 +5,7 @@ Como visitante da Kabum
 Quero pesquisar um produto pela barra de busca
 Para acessar a listagem com os resultados relacionados
 
-@busca @camada_regressao_funcional
+@busca @camada_regressao_funcional @regression
 Cenario: Buscar monitor pela home
 Dado que acesso a home da Kabum para realizar uma busca
 Quando informo "monitor" no campo de busca da home
