@@ -17,6 +17,7 @@
 		<cucumber.parallel.enabled>true</cucumber.parallel.enabled>
 		<cucumber.parallel.strategy>fixed</cucumber.parallel.strategy>
 		<cucumber.parallelism>2</cucumber.parallelism>
+		<cucumber.filter.tags></cucumber.filter.tags>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -84,6 +85,7 @@
 						<cucumber.execution.parallel.config.strategy>${cucumber.parallel.strategy}</cucumber.execution.parallel.config.strategy>
 						<cucumber.execution.parallel.config.fixed.parallelism>${cucumber.parallelism}</cucumber.execution.parallel.config.fixed.parallelism>
 						<cucumber.execution.parallel.config.fixed.max-pool-size>${cucumber.parallelism}</cucumber.execution.parallel.config.fixed.max-pool-size>
+						<cucumber.filter.tags>${cucumber.filter.tags}</cucumber.filter.tags>
 					</systemPropertyVariables>
 				</configuration>
 			</plugin>
