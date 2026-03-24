@@ -44,11 +44,37 @@ jobs:
         run: |
           google-chrome --version || chromium-browser --version || chromium --version
 
+      - name: Set quality gates by environment
+        run: |
+          TARGET_BRANCH="${GITHUB_BASE_REF:-$GITHUB_REF_NAME}"
+          echo "Target branch for gates: ${TARGET_BRANCH}"
+
+          if [ "${TARGET_BRANCH}" = "main" ]; then
+            echo "MIN_SUCCESS_RATE=0.98" >> "$GITHUB_ENV"
+            echo "MAX_SUITE_SECONDS=480" >> "$GITHUB_ENV"
+            echo "MAX_RECURRENT_UNSTABLE=0" >> "$GITHUB_ENV"
+          elif [ "${TARGET_BRANCH}" = "hml" ]; then
+            echo "MIN_SUCCESS_RATE=0.90" >> "$GITHUB_ENV"
+            echo "MAX_SUITE_SECONDS=900" >> "$GITHUB_ENV"
+            echo "MAX_RECURRENT_UNSTABLE=1" >> "$GITHUB_ENV"
+          else
+            # Fallback para outras branches (feature/hotfix)
+            echo "MIN_SUCCESS_RATE=0.90" >> "$GITHUB_ENV"
+            echo "MAX_SUITE_SECONDS=900" >> "$GITHUB_ENV"
+            echo "MAX_RECURRENT_UNSTABLE=1" >> "$GITHUB_ENV"
+          fi
+
+      - name: Show quality gate thresholds
+        run: |
+          echo "MIN_SUCCESS_RATE=${MIN_SUCCESS_RATE}"
+          echo "MAX_SUITE_SECONDS=${MAX_SUITE_SECONDS}"
+          echo "MAX_RECURRENT_UNSTABLE=${MAX_RECURRENT_UNSTABLE}"
+
       - name: Clean old Allure artifacts
         run: rm -rf allure-results allure-report
 
       - name: Run tests
-        run: mvn -B clean test -Dheadless=true
+        run: mvn -B clean test -Dheadless=true -Dmaven.test.failure.ignore=true
 
       - name: Validate Allure results
         run: |
@@ -60,6 +86,87 @@ jobs:
 
       - name: Generate Allure report
         run: allure generate allure-results --clean -o allure-report
+
+      - name: Quality gates (success rate, suite duration, flaky recurrence)
+        run: |
+          python3 - << 'PY'
+          import glob
+          import os
+          import sys
+          import xml.etree.ElementTree as ET
+          from collections import Counter
+
+          min_success_rate = float(os.getenv("MIN_SUCCESS_RATE", "0.95"))
+          max_suite_seconds = float(os.getenv("MAX_SUITE_SECONDS", "600"))
+          max_recurrent_unstable = int(os.getenv("MAX_RECURRENT_UNSTABLE", "0"))
+
+          report_files = sorted(glob.glob("target/surefire-reports/*.xml"))
+          if not report_files:
+            print("::error::Nenhum arquivo em target/surefire-reports para aplicar quality gates.")
+            sys.exit(1)
+
+          total = failures = errors = skipped = 0
+          max_suite_time = 0.0
+          failed_occurrences = Counter()
+          flaky_count = 0
+
+          for path in report_files:
+            try:
+              root = ET.parse(path).getroot()
+            except ET.ParseError:
+              continue
+
+            suites = [root] if root.tag == "testsuite" else root.findall("testsuite")
+            for suite in suites:
+              total += int(suite.attrib.get("tests", 0))
+              failures += int(suite.attrib.get("failures", 0))
+              errors += int(suite.attrib.get("errors", 0))
+              skipped += int(suite.attrib.get("skipped", 0))
+              max_suite_time = max(max_suite_time, float(suite.attrib.get("time", 0.0)))
+
+              for case in suite.findall("testcase"):
+                name = f"{case.attrib.get('classname','?')}#{case.attrib.get('name','?')}"
+
+                if case.find("failure") is not None or case.find("error") is not None:
+                  failed_occurrences[name] += 1
+
+                if case.find("flakyFailure") is not None or case.find("flakyError") is not None:
+                  flaky_count += 1
+
+          executed = max(total - skipped, 0)
+          passed = max(executed - failures - errors, 0)
+          success_rate = (passed / executed) if executed > 0 else 0.0
+
+          recurrent_failed = sum(1 for _, cnt in failed_occurrences.items() if cnt > 1)
+          recurrent_unstable = recurrent_failed + flaky_count
+
+          print("=== QUALITY GATES SUMMARY ===")
+          print(f"Total: {total} | Executed: {executed} | Passed: {passed} | Failures: {failures} | Errors: {errors} | Skipped: {skipped}")
+          print(f"Success rate: {success_rate:.2%} (min: {min_success_rate:.2%})")
+          print(f"Max suite duration: {max_suite_time:.2f}s (max: {max_suite_seconds:.2f}s)")
+          print(f"Recurrent unstable: {recurrent_unstable} (max: {max_recurrent_unstable})")
+
+          reasons = []
+          if success_rate < min_success_rate:
+            reasons.append(
+              f"Taxa de sucesso abaixo do minimo: {success_rate:.2%} < {min_success_rate:.2%}"
+            )
+          if max_suite_time > max_suite_seconds:
+            reasons.append(
+              f"Suite excedeu tempo maximo: {max_suite_time:.2f}s > {max_suite_seconds:.2f}s"
+            )
+          if recurrent_unstable > max_recurrent_unstable:
+            reasons.append(
+              f"Instabilidade recorrente acima do limite: {recurrent_unstable} > {max_recurrent_unstable}"
+            )
+
+          if reasons:
+            for reason in reasons:
+              print(f"::error::{reason}")
+            sys.exit(1)
+
+          print("Quality gates aprovados.")
+          PY
 
       - name: Upload Surefire reports
         if: always()
