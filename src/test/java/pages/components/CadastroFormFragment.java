@@ -36,7 +36,28 @@ public class CadastroFormFragment {
 	private static final By LABEL_CHECKBOX_POLITICAS = By.xpath(
 			"//label[contains(normalize-space(.), 'Li e estou de acordo')]"
 	);
-	private static final By BOTAO_ENTRAR = By.cssSelector("[role='dialog'] button[type='submit']");
+	private static final By BOTAO_ENTRAR = By.cssSelector(
+			"[role='dialog'] button[data-testid='enter-button'], "
+					+ "[role='dialog'] button[data-testid='login-submit'], "
+					+ "[role='dialog'] button[type='submit']"
+	);
+	private static final By OPCAO_CPF = By.cssSelector(
+			"[data-testid='cpf-option'], "
+					+ "[data-testid='register-cpf-option'], "
+					+ "[data-testid='option-cpf'], "
+					+ "input[data-testid='cpf-radio'], "
+					+ "[id*='cpf'][role='radio']"
+	);
+	private static final By BOTAO_CONTINUAR = By.cssSelector(
+			"button[data-testid='continue-button'], "
+					+ "button[data-testid='register-continue'], "
+					+ "button[data-testid='btn-continuar']"
+	);
+	private static final By BOTAO_CONFIRMAR = By.cssSelector(
+			"button[data-testid='confirm-button'], "
+					+ "button[data-testid='address-confirm-button'], "
+					+ "button[data-testid='btn-confirmar']"
+	);
 	private static final By ELEMENTOS_CLICAVEIS = By.cssSelector(
 			"button, a, label, [role='button'], [role='radio'], input[type='button'], input[type='submit']"
 	);
@@ -58,12 +79,14 @@ public class CadastroFormFragment {
 	}
 
 	public void clicarEmEntrarNoPopup() {
-		WebElement botao = wait.until(ExpectedConditions.elementToBeClickable(BOTAO_ENTRAR));
+		WebElement botao = encontrarPrimeiroClicavel(BOTAO_ENTRAR);
 		clicar(botao);
 	}
 
 	public void selecionarOpcaoCpf() {
-		clicarElementoPorTexto("cadastrar cpf", "cpf");
+		if (!clicarPrimeiroDisponivel(OPCAO_CPF)) {
+			clicarElementoPorTexto("cadastrar cpf", "cpf");
+		}
 	}
 
 	public void preencherEmailCadastro(String email) {
@@ -115,7 +138,9 @@ public class CadastroFormFragment {
 	}
 
 	public void clicarEmContinuarNoCadastro() {
-		clicarElementoPorTexto("continuar");
+		if (!clicarPrimeiroDisponivel(BOTAO_CONTINUAR)) {
+			clicarElementoPorTexto("continuar");
+		}
 	}
 
 	public void aguardarEtapaEnderecoPorCep() {
@@ -131,7 +156,36 @@ public class CadastroFormFragment {
 	}
 
 	public void clicarEmConfirmar() {
-		clicarElementoPorTexto("confirmar");
+		if (!clicarPrimeiroDisponivel(BOTAO_CONFIRMAR)) {
+			clicarElementoPorTexto("confirmar");
+		}
+	}
+
+	private boolean clicarPrimeiroDisponivel(By... seletores) {
+		for (By seletor : seletores) {
+			List<WebElement> elementos = driver.findElements(seletor);
+			for (WebElement elemento : elementos) {
+				if (!estaVisivel(elemento) || !elemento.isEnabled()) {
+					continue;
+				}
+				clicar(elemento);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private WebElement encontrarPrimeiroClicavel(By... seletores) {
+		for (By seletor : seletores) {
+			List<WebElement> elementos = driver.findElements(seletor);
+			for (WebElement elemento : elementos) {
+				if (!estaVisivel(elemento) || !elemento.isEnabled()) {
+					continue;
+				}
+				return wait.until(ExpectedConditions.elementToBeClickable(elemento));
+			}
+		}
+		throw new NoSuchElementException("Nenhum elemento clicavel encontrado para os seletores resilientes informados.");
 	}
 
 	public void preencherNumero(String numero) {
