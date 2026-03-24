@@ -1,6 +1,7 @@
 package steps;
 
 import org.openqa.selenium.WebDriver;
+import org.opentest4j.TestAbortedException;
 
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
@@ -14,6 +15,14 @@ public class ScenarioHooks {
 
 	public ScenarioHooks(DriverContext driverContext) {
 		this.driverContext = driverContext;
+	}
+
+	@Before(value = "@blocked or @bloqueado or @flaky", order = -1)
+	public void marcarCenarioComoSkippedNoAllure(Scenario scenario) {
+		String reason = "Cenario marcado com tag de nao execucao na pipeline: " + scenario.getSourceTagNames();
+		Allure.step("Skipped por tag de governanca");
+		Allure.addAttachment("skip_reason", reason);
+		throw new TestAbortedException(reason);
 	}
 
 	@Before(order = 0)
