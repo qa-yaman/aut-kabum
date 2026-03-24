@@ -1,7 +1,10 @@
 "DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
 "Como visitante da Kabum
-Quero pesquisar um produto pela barra de busca
-Para acessar a listagem com os resultados relacionados","28666","Buscar monitor pela home","","2026-03-24","passed","2026-03-24","","Busca de produtos na home da Kabum","Buscar monitor pela home",""
-"Como visitante da Kabum
 Quero validar o acesso inicial ao site
-Para confirmar que a home esta disponivel","24795","Home carregada com sucesso","","2026-03-24","passed","2026-03-24","","Smoke test da home da Kabum","Home carregada com sucesso",""
+Para confirmar que a home esta disponivel","13433","Home carregada com sucesso","","2026-03-24","passed","2026-03-24","","Smoke test da home da Kabum","Home carregada com sucesso",""
+"Como visitante da Kabum
+Quero concluir o cadastro a partir da home
+Para visualizar a confirmacao de usuario cadastrado com sucesso","10087","Cadastrar novo usuario com sucesso pela home","","2026-03-24","skipped","2026-03-24","","Cadastro completo pela home da Kabum","Cadastrar novo usuario com sucesso pela home",""
+"Como visitante da Kabum
+Quero pesquisar um produto pela barra de busca
+Para acessar a listagem com os resultados relacionados","19391","Buscar monitor pela home","","2026-03-24","passed","2026-03-24","","Busca de produtos na home da Kabum","Buscar monitor pela home",""

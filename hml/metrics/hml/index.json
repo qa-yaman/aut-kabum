@@ -4,10 +4,10 @@
   "runs_count": 1,
   "current": {
     "branch": "hml",
-    "run_id": "23515033278",
-    "run_number": "15",
-    "sha": "221c74c89640b4687351966092bb3b71bec164a3",
-    "timestamp": "2026-03-24T22:21:52Z",
+    "run_id": "23515820382",
+    "run_number": "17",
+    "sha": "76ef5126e78844401c7d664f6042e4e0e1caab8f",
+    "timestamp": "2026-03-24T22:45:41Z",
     "totals": {
       "total": 3,
       "executed": 2,
@@ -16,7 +16,7 @@
       "skipped": 1
     },
     "pass_rate": 1.0,
-    "duration_seconds": 29.083,
+    "duration_seconds": 19.855,
     "top_failures": [],
     "failed_tests": [],
     "all_tests": [
@@ -30,11 +30,11 @@
   "top_recurrent_failures": [],
   "trend": [
     {
-      "run_id": "23515033278",
-      "run_number": "15",
-      "timestamp": "2026-03-24T22:21:52Z",
+      "run_id": "23515820382",
+      "run_number": "17",
+      "timestamp": "2026-03-24T22:45:41Z",
       "pass_rate": 1.0,
-      "duration_seconds": 29.083,
+      "duration_seconds": 19.855,
       "failed": 0
     }
   ]

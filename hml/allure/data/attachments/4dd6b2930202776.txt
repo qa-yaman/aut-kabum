@@ -1,0 +1,1 @@
+Cenario marcado com tag de nao execucao na pipeline: [@cadastro-completo, @login, @bloqueado, @camada_regressao_funcional, @camada_e2e_critica, @regression, @critical, @blocked]

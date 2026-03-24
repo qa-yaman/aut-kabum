@@ -1,0 +1,23 @@
+{
+  "branch": "hml",
+  "run_id": "23515820382",
+  "run_number": "17",
+  "sha": "76ef5126e78844401c7d664f6042e4e0e1caab8f",
+  "timestamp": "2026-03-24T22:45:41Z",
+  "totals": {
+    "total": 3,
+    "executed": 2,
+    "passed": 2,
+    "failed": 0,
+    "skipped": 1
+  },
+  "pass_rate": 1.0,
+  "duration_seconds": 19.855,
+  "top_failures": [],
+  "failed_tests": [],
+  "all_tests": [
+    "Busca de produtos na home da Kabum#Buscar monitor pela home",
+    "Cadastro completo pela home da Kabum#Cadastrar novo usuario com sucesso pela home",
+    "Smoke test da home da Kabum#Home carregada com sucesso"
+  ]
+}
