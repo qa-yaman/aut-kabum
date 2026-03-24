@@ -2,12 +2,19 @@ package pages;
 
 import java.util.Locale;
 import helpers.WaitFactory;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class KabumHomePage {
 
 	private static final String HOME_URL = "https://www.kabum.com.br/";
+	private static final By HOME_READY = By.cssSelector(
+			"[data-testid='header-logo'], "
+					+ "[data-testid='search-input'], "
+					+ "#inputBusca, header"
+	);
 
 	private final WebDriver driver;
 	private final WebDriverWait wait;
@@ -19,7 +26,7 @@ public class KabumHomePage {
 
 	public void abrirHome() {
 		driver.get(HOME_URL);
-		wait.until(d -> getTituloNormalizado().contains("kabum"));
+		wait.until(ExpectedConditions.visibilityOfElementLocated(HOME_READY));
 	}
 
 	public String getTitulo() {
