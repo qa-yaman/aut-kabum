@@ -1,34 +1,213 @@
-<!DOCTYPE html>
-<html dir="ltr" lang="en">
+<!doctype html>
+<html lang="pt-BR">
 <head>
-    <meta charset="utf-8">
-    <title>Allure Report</title>
-    <link rel="icon" href="favicon.ico">
-    <link rel="stylesheet" type="text/css" href="styles.css">
-    <link rel="stylesheet" type="text/css" href="plugin/screen-diff/styles.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dashboard de Execucao</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #f3f5f9;
+      --card: #ffffff;
+      --text: #1a2433;
+      --muted: #5b6b82;
+      --accent: #0a7d65;
+      --accent-2: #1565c0;
+      --danger: #c62828;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(160deg, #eef2f8 0%, #f8fafc 100%);
+      color: var(--text);
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 { margin: 0 0 6px; font-size: 28px; }
+    .subtitle { color: var(--muted); margin-bottom: 18px; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+    .label { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+    .value { font-size: 24px; font-weight: 700; }
+    .value.pass { color: var(--accent); }
+    .value.flaky { color: var(--danger); }
+    .value.time { color: var(--accent-2); }
+    .panel {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      margin-bottom: 14px;
+    }
+    ul { margin: 8px 0 0; padding-left: 18px; }
+    li { margin-bottom: 6px; }
+  </style>
 </head>
 <body>
-    <div id="alert"></div>
-    <div id="content">
-        <span class="spinner">
-            <span class="spinner__circle"></span>
-        </span>
-    </div>
-    <div id="popup"></div>
-    <script src="app.js"></script>
-    <script src="plugin/behaviors/index.js"></script>
-    <script src="plugin/packages/index.js"></script>
-    <script src="plugin/screen-diff/index.js"></script>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FVWC4GKEYS"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-FVWC4GKEYS', {
-          'allureVersion': '2.38.1',
-          'reportUuid': 'bcde6837-efd9-4a48-8d6c-4c56ef79ac43',
-          'single_file': false
-        });
-    </script>
+  <div class="container">
+    <h1>Dashboard Historico de Execucao</h1>
+    <div class="subtitle" id="meta">Carregando metricas...</div>
+
+    <section class="cards">
+      <div class="card">
+        <div class="label">Pass rate atual</div>
+        <div class="value pass" id="passRate">-</div>
+      </div>
+      <div class="card">
+        <div class="label">Flaky rate (janela)</div>
+        <div class="value flaky" id="flakyRate">-</div>
+      </div>
+      <div class="card">
+        <div class="label">Duracao atual</div>
+        <div class="value time" id="duration">-</div>
+      </div>
+      <div class="card">
+        <div class="label">Execucoes na janela</div>
+        <div class="value" id="window">-</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h3>Tendencia (pass rate e duracao)</h3>
+      <canvas id="trendChart" height="100"></canvas>
+    </section>
+
+    <section class="panel">
+      <h3>Top falhas da execucao atual</h3>
+      <ul id="topFailures"></ul>
+    </section>
+
+    <section class="panel">
+      <h3>Falhas recorrentes na janela</h3>
+      <canvas id="recurrentChart" height="90"></canvas>
+      <ul id="recurrentFailures"></ul>
+    </section>
+  </div>
+
+  <script>
+    function detectBranch() {
+      const p = window.location.pathname.toLowerCase();
+      return p.includes('/hml/') ? 'hml' : 'main';
+    }
+
+    function toPercent(v) {
+      return (Number(v || 0) * 100).toFixed(2) + '%';
+    }
+
+    function toSeconds(v) {
+      return Number(v || 0).toFixed(1) + 's';
+    }
+
+    async function loadMetrics() {
+      const branch = detectBranch();
+      const resp = await fetch(`metrics/${branch}/index.json`, { cache: 'no-store' });
+      if (!resp.ok) throw new Error('Falha ao carregar index de metricas');
+      return resp.json();
+    }
+
+    function render(data) {
+      const current = data.current || {};
+      const trend = data.trend || [];
+      const top = current.top_failures || [];
+      const recurrent = data.top_recurrent_failures || [];
+
+      document.getElementById('meta').textContent =
+        `Branch: ${data.branch || '-'} | Run: ${current.run_number || '-'} | Commit: ${(current.sha || '').slice(0, 7)}`;
+      document.getElementById('passRate').textContent = toPercent(current.pass_rate);
+      document.getElementById('flakyRate').textContent = toPercent(data.flaky_rate);
+      document.getElementById('duration').textContent = toSeconds(current.duration_seconds);
+      document.getElementById('window').textContent = String(data.runs_count || 0);
+
+      const ul = document.getElementById('topFailures');
+      if (!top.length) {
+        ul.innerHTML = '<li>Nenhuma falha na execucao atual.</li>';
+      } else {
+        ul.innerHTML = top.map(x => `<li>${x.test} (${x.count})</li>`).join('');
+      }
+
+      const recurrentUl = document.getElementById('recurrentFailures');
+      if (!recurrent.length) {
+        recurrentUl.innerHTML = '<li>Nenhuma falha recorrente na janela.</li>';
+      } else {
+        recurrentUl.innerHTML = recurrent
+          .map(x => `<li>${x.test} (${x.fail_runs}/${x.total_runs} runs com falha, taxa ${(Number(x.failure_rate || 0) * 100).toFixed(1)}%)</li>`)
+          .join('');
+      }
+
+      const ctx = document.getElementById('trendChart');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: trend.map(t => `#${t.run_number || '?'}`),
+          datasets: [
+            {
+              label: 'Pass rate (%)',
+              data: trend.map(t => Number(t.pass_rate || 0) * 100),
+              borderColor: '#0a7d65',
+              backgroundColor: 'rgba(10,125,101,0.15)',
+              yAxisID: 'y',
+              tension: 0.2
+            },
+            {
+              label: 'Duracao (s)',
+              data: trend.map(t => Number(t.duration_seconds || 0)),
+              borderColor: '#1565c0',
+              backgroundColor: 'rgba(21,101,192,0.15)',
+              yAxisID: 'y1',
+              tension: 0.2
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          interaction: { mode: 'index', intersect: false },
+          scales: {
+            y: { position: 'left', suggestedMin: 0, suggestedMax: 100 },
+            y1: { position: 'right', grid: { drawOnChartArea: false }, suggestedMin: 0 }
+          }
+        }
+      });
+
+      const rctx = document.getElementById('recurrentChart');
+      new Chart(rctx, {
+        type: 'bar',
+        data: {
+          labels: recurrent.map(x => x.test.length > 45 ? x.test.slice(0, 45) + '...' : x.test),
+          datasets: [
+            {
+              label: 'Taxa de falha recorrente (%)',
+              data: recurrent.map(x => Number(x.failure_rate || 0) * 100),
+              borderColor: '#c62828',
+              backgroundColor: 'rgba(198,40,40,0.35)'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { suggestedMin: 0, suggestedMax: 100 }
+          },
+          plugins: {
+            legend: { display: true }
+          }
+        }
+      });
+    }
+
+    loadMetrics().then(render).catch(err => {
+      document.getElementById('meta').textContent = 'Erro ao carregar dashboard: ' + err.message;
+    });
+  </script>
 </body>
 </html>
