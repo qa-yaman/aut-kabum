@@ -40,6 +40,17 @@ jobs:
           java -version
           mvn -version
 
+      - name: Lint guard - block implicit wait usage
+        run: |
+          set -euo pipefail
+
+          if grep -RInE "implicitlyWait[[:space:]]*\(" src/test/java; then
+            echo "::error::Uso de implicit wait detectado. Padrao do projeto exige apenas waits explicitos."
+            exit 1
+          fi
+
+          echo "Lint guard OK: nenhum implicit wait encontrado."
+
       - name: Check Chrome availability
         run: |
           google-chrome --version || chromium-browser --version || chromium --version
