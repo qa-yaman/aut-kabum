@@ -17,10 +17,25 @@ public class KabumBuscaPage {
 	private final WebDriver driver;
 	private final WebDriverWait wait;
 
-	private final By campoBusca = By.id("inputBusca");
-	private final By menuSugestoes = By.cssSelector("[id$='-menu']");
-	private final By opcoesSugestao = By.cssSelector("[id$='-menu'] [role='option'], [id$='-menu'] a");
-	private final By tituloBusca = By.tagName("h1");
+	private final By campoBusca = By.cssSelector(
+			"input[data-testid='search-input'], "
+					+ "input[data-testid='header-search-input'], "
+					+ "#inputBusca"
+	);
+	private final By menuSugestoes = By.cssSelector(
+			"[data-testid='search-suggestions'], "
+					+ "[data-testid='autocomplete-menu'], "
+					+ "[id$='-menu']"
+	);
+	private final By opcoesSugestao = By.cssSelector(
+			"[data-testid='search-suggestion-item'], "
+					+ "[data-testid='autocomplete-option'], "
+					+ "[id$='-menu'] [role='option'], "
+					+ "[id$='-menu'] a"
+	);
+	private final By tituloBusca = By.cssSelector(
+			"[data-testid='search-results-title'], h1"
+	);
 
 	public KabumBuscaPage(WebDriver driver) {
 		this.driver = driver;
@@ -85,6 +100,9 @@ public class KabumBuscaPage {
 	}
 
 	private void clicarComFallback(WebElement elemento) {
+		if (elemento == null) {
+			throw new IllegalStateException("Nenhuma sugestao de busca visivel foi encontrada.");
+		}
 		try {
 			wait.until(ExpectedConditions.elementToBeClickable(elemento)).click();
 		} catch (RuntimeException ex) {
