@@ -199,6 +199,13 @@ jobs:
           echo "MAX_SUITE_SECONDS=${MAX_SUITE_SECONDS}"
           echo "MAX_RECURRENT_UNSTABLE=${MAX_RECURRENT_UNSTABLE}"
 
+      - name: Set metrics context
+        run: |
+          TARGET_BRANCH="${GITHUB_BASE_REF:-$GITHUB_REF_NAME}"
+          echo "TARGET_BRANCH=${TARGET_BRANCH}" >> "$GITHUB_ENV"
+          echo "METRICS_WINDOW=100" >> "$GITHUB_ENV"
+          echo "RUN_TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
+
       - name: Clean old Allure artifacts
         run: rm -rf allure-results allure-report
 
@@ -297,6 +304,36 @@ jobs:
           print("Quality gates aprovados.")
           PY
 
+      - name: Checkout gh-pages history
+        if: github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'hml')
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages-history
+
+      - name: Build historical metrics and dashboard
+        if: github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'hml')
+        run: |
+          python3 scripts/metrics_dashboard.py \
+            --branch "${TARGET_BRANCH}" \
+            --run-id "${GITHUB_RUN_ID}" \
+            --run-number "${GITHUB_RUN_NUMBER}" \
+            --sha "${GITHUB_SHA}" \
+            --timestamp "${RUN_TS}" \
+            --window "${METRICS_WINDOW}" \
+            --surefire-glob "target/surefire-reports/*.xml" \
+            --history-root "gh-pages-history/metrics" \
+            --current-out "metrics/current/run.json" \
+            --publish-root "metrics/publish"
+
+      - name: Prepare publish site
+        if: github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'hml')
+        run: |
+          mkdir -p site/allure
+          cp -R allure-report/. site/allure/
+          cp -R metrics/publish/. site/
+
       - name: Upload Surefire reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -322,12 +359,20 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      - name: Upload metrics dashboard artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: metrics-dashboard
+          path: metrics/publish
+          if-no-files-found: ignore
+
       - name: Deploy main report to GitHub Pages
         if: github.event_name == 'push' && github.ref_name == 'main'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./allure-report
+          publish_dir: ./site
           publish_branch: gh-pages
           keep_files: true
 
@@ -336,7 +381,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./allure-report
+          publish_dir: ./site
           publish_branch: gh-pages
           destination_dir: hml
           keep_files: true
