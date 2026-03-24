@@ -11,14 +11,17 @@ import io.cucumber.java.pt.Quando;
 import io.qameta.allure.Allure;
 import pages.KabumCadastroPage;
 import steps.context.DriverContext;
-import steps.context.SensitiveDataResolver;
+import steps.context.TestData;
+import steps.context.TestDataFactory;
 
 public class KabumCadastroSteps {
 	private final DriverContext driverContext;
+	private final TestDataFactory testDataFactory;
 	private KabumCadastroPage kabumCadastroPage;
 
-	public KabumCadastroSteps(DriverContext driverContext) {
+	public KabumCadastroSteps(DriverContext driverContext, TestDataFactory testDataFactory) {
 		this.driverContext = driverContext;
+		this.testDataFactory = testDataFactory;
 	}
 
 	@Dado("que acesso a home da Kabum")
@@ -44,10 +47,12 @@ public class KabumCadastroSteps {
 		);
 	}
 
-	@Quando("informo o email {string} no popup e clico em entrar")
-	public void informoOEmailNoPopupEClicoEmEntrar(String email) {
+	@Quando("informo o email de cadastro no popup e clico em entrar")
+	public void informoOEmailDeCadastroNoPopupEClicoEmEntrar() {
 		garantirPageInicializada();
-		kabumCadastroPage.preencherEmailNoPopup(SensitiveDataResolver.resolve(email));
+		TestData data = testDataFactory.get();
+		Allure.parameter("email", data.email());
+		kabumCadastroPage.preencherEmailNoPopup(data.email());
 		kabumCadastroPage.clicarEmEntrarNoPopup();
 		try {
 			kabumCadastroPage.aguardarNovaEtapaOuBloqueioDeSeguranca();
@@ -79,22 +84,20 @@ public class KabumCadastroSteps {
 		kabumCadastroPage.preencherNomeCompleto(nomeCompleto);
 	}
 
-	@E("preencho os dados destacados com email {string}, CPF {string}, celular {string}, data de nascimento {string}, nome completo {string} e senha {string}")
-	public void preenchoOsDadosDestacadosComEmailCpfCelularDataNascimentoNomeCompletoESenha(
-			String email,
-			String cpf,
-			String celular,
-			String dataNascimento,
-			String nomeCompleto,
-			String senha
-	) {
+	@E("preencho os dados de cadastro gerados automaticamente")
+	public void preenchoOsDadosDeCadastroGeradosAutomaticamente() {
 		garantirPageInicializada();
-		kabumCadastroPage.preencherEmailCadastro(SensitiveDataResolver.resolve(email));
-		kabumCadastroPage.preencherCpf(SensitiveDataResolver.resolve(cpf));
-		kabumCadastroPage.preencherCelular(celular);
-		kabumCadastroPage.preencherDataNascimento(dataNascimento);
-		kabumCadastroPage.preencherNomeCompleto(nomeCompleto);
-		kabumCadastroPage.preencherSenha(SensitiveDataResolver.resolve(senha));
+		TestData data = testDataFactory.get();
+		Allure.parameter("cpf", data.cpf());
+		Allure.parameter("celular", data.celular());
+		Allure.parameter("dataNascimento", data.dataNascimento());
+		Allure.parameter("nomeCompleto", data.nomeCompleto());
+		kabumCadastroPage.preencherEmailCadastro(data.email());
+		kabumCadastroPage.preencherCpf(data.cpf());
+		kabumCadastroPage.preencherCelular(data.celular());
+		kabumCadastroPage.preencherDataNascimento(data.dataNascimento());
+		kabumCadastroPage.preencherNomeCompleto(data.nomeCompleto());
+		kabumCadastroPage.preencherSenha(data.senha());
 	}
 
 	@E("marco o checkbox Li e estou de acordo")
@@ -115,21 +118,24 @@ public class KabumCadastroSteps {
 		kabumCadastroPage.aguardarAvancoDaEtapaDeCadastro();
 	}
 
-	@E("informo o CEP {string} e clico em confirmar")
-	public void informoOCepEClicoEmConfirmar(String cep) {
+	@E("informo o CEP de cadastro e clico em confirmar")
+	public void informoOCepDeCadastroEClicoEmConfirmar() {
 		garantirPageInicializada();
+		TestData data = testDataFactory.get();
+		Allure.parameter("cep", data.cep());
 		kabumCadastroPage.aguardarEtapaEnderecoPorCep();
-		kabumCadastroPage.preencherCep(SensitiveDataResolver.resolve(cep));
+		kabumCadastroPage.preencherCep(data.cep());
 		kabumCadastroPage.clicarEmConfirmar();
 		kabumCadastroPage.aguardarEtapaNumeroEndereco();
 	}
 
-	@E("informo o numero {string} e complemento {string} e clico em confirmar")
-	public void informoONumeroEComplementoEClicoEmConfirmar(String numero, String complemento) {
+	@E("informo o numero e complemento de endereco e clico em confirmar")
+	public void informoONumeroEComplementoDeEnderecoEClicoEmConfirmar() {
 		garantirPageInicializada();
+		TestData data = testDataFactory.get();
 		kabumCadastroPage.aguardarEtapaNumeroEndereco();
-		kabumCadastroPage.preencherNumero(numero);
-		kabumCadastroPage.preencherComplemento(complemento);
+		kabumCadastroPage.preencherNumero(data.numero());
+		kabumCadastroPage.preencherComplemento(data.complemento());
 		kabumCadastroPage.clicarEmConfirmar();
 	}
 
