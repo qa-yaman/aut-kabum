@@ -12,7 +12,6 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 public class DriverContext {
 
 	private static final Duration PAGE_LOAD_TIMEOUT = Duration.ofSeconds(45);
-	private static final Duration IMPLICIT_WAIT_TIMEOUT = Duration.ofSeconds(3);
 	private static final String DEFAULT_LANGUAGE = "pt-BR";
 	private static final Object CHROMEDRIVER_SETUP_LOCK = new Object();
 	private static volatile boolean CHROMEDRIVER_CONFIGURADO;
@@ -85,7 +84,6 @@ public class DriverContext {
 
 	private void configureDriver(WebDriver webDriver) {
 		webDriver.manage().timeouts().pageLoadTimeout(PAGE_LOAD_TIMEOUT);
-		webDriver.manage().timeouts().implicitlyWait(IMPLICIT_WAIT_TIMEOUT);
 	}
 
 	private static void garantirChromedriverConfigurado() {
