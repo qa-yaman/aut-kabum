@@ -315,6 +315,14 @@ jobs:
       - name: Build historical metrics and dashboard
         if: github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'hml')
         run: |
+          # Para main: arquivos ficam na raiz do gh-pages (gh-pages-history/metrics/)
+          # Para hml:  arquivos ficam em hml/ no gh-pages (gh-pages-history/hml/metrics/)
+          if [ "${TARGET_BRANCH}" = "hml" ]; then
+            HISTORY_ROOT="gh-pages-history/hml/metrics"
+          else
+            HISTORY_ROOT="gh-pages-history/metrics"
+          fi
+
           python3 scripts/metrics_dashboard.py \
             --branch "${TARGET_BRANCH}" \
             --run-id "${GITHUB_RUN_ID}" \
@@ -323,7 +331,7 @@ jobs:
             --timestamp "${RUN_TS}" \
             --window "${METRICS_WINDOW}" \
             --surefire-glob "target/surefire-reports/*.xml" \
-            --history-root "gh-pages-history/metrics" \
+            --history-root "${HISTORY_ROOT}" \
             --current-out "metrics/current/run.json" \
             --publish-root "metrics/publish"
 
