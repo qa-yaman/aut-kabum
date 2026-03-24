@@ -1,10 +1,10 @@
 package steps;
 
 import org.openqa.selenium.WebDriver;
-import org.opentest4j.TestAbortedException;
 
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
+import io.cucumber.java.PendingException;
 import io.cucumber.java.Scenario;
 import io.qameta.allure.Allure;
 import steps.context.DriverContext;
@@ -22,7 +22,7 @@ public class ScenarioHooks {
 		String reason = "Cenario marcado com tag de nao execucao na pipeline: " + scenario.getSourceTagNames();
 		Allure.step("Skipped por tag de governanca");
 		Allure.addAttachment("skip_reason", reason);
-		throw new TestAbortedException(reason);
+		throw new PendingException(reason);
 	}
 
 	@Before(order = 0)
