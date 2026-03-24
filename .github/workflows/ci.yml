@@ -19,8 +19,70 @@ permissions:
   contents: write
 
 jobs:
+  test-layers:
+    name: Test by layer (${{ matrix.layer }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - layer: smoke
+            tag: camada_smoke
+          - layer: regressao-funcional
+            tag: camada_regressao_funcional
+          - layer: contrato-api
+            tag: camada_contrato_api
+          - layer: e2e-critica
+            tag: camada_e2e_critica
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Verify layer has tagged scenarios
+        id: layer_check
+        run: |
+          TAG="@${{ matrix.tag }}"
+          if grep -RIn "$TAG" src/test/resources/features; then
+            echo "has_tests=true" >> "$GITHUB_OUTPUT"
+            echo "Layer ${{ matrix.layer }}: tagged scenarios found for $TAG"
+          else
+            echo "has_tests=false" >> "$GITHUB_OUTPUT"
+            echo "Layer ${{ matrix.layer }}: no tagged scenarios for $TAG (skipping run)"
+          fi
+
+      - name: Run tests for layer
+        if: steps.layer_check.outputs.has_tests == 'true'
+        run: |
+          mvn -B clean test -Dheadless=true -Dmaven.test.failure.ignore=true -Dcucumber.filter.tags="@${{ matrix.tag }}"
+
+      - name: Upload layer Surefire reports
+        if: always() && steps.layer_check.outputs.has_tests == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports-${{ matrix.layer }}
+          path: target/surefire-reports
+          if-no-files-found: ignore
+
+      - name: Upload layer Allure results
+        if: always() && steps.layer_check.outputs.has_tests == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-${{ matrix.layer }}
+          path: allure-results
+          if-no-files-found: ignore
+
   build-and-report:
     name: Build, Test and Publish Allure
+    needs: test-layers
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
