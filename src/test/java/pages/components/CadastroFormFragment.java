@@ -33,7 +33,7 @@ public class CadastroFormFragment {
 	private static final By INPUT_NUMERO_ENDERECO = By.cssSelector("input[name='number']");
 	private static final By INPUT_COMPLEMENTO_ENDERECO = By.cssSelector("input[name='complement']");
 	private static final By CHECKBOX_POLITICAS = By.cssSelector("input[type='checkbox'][name='policies']");
-	private static final By LABEL_CHECKBOX_POLITICAS = By.xpath(
+	private static final By LABEL_CHECKBOX_POLITICAS = By.xpath( // LOCATOR_ALLOW_TEXT: sem data-testid disponivel no checkbox de politicas; XPath por texto e unica alternativa estavel
 			"//label[contains(normalize-space(.), 'Li e estou de acordo')]"
 	);
 	private static final By BOTAO_ENTRAR = By.cssSelector(
