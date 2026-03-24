@@ -5,7 +5,7 @@ Como visitante da Kabum
 Quero concluir o cadastro a partir da home
 Para visualizar a confirmacao de usuario cadastrado com sucesso
 
-@cadastro-completo @login @bloqueado
+@cadastro-completo @login @bloqueado @camada_regressao_funcional @camada_e2e_critica
 Cenario: Cadastrar novo usuario com sucesso pela home
 Dado que acesso a home da Kabum
 Quando clico no botao Entre ou Cadastre-se da home
