@@ -19,22 +19,23 @@ permissions:
   contents: write
 
 jobs:
-  test-layers:
-    name: Test by layer (${{ matrix.layer }})
+  bdd-pipelines:
+    name: BDD pipeline (${{ matrix.pipeline }})
     runs-on: ubuntu-latest
     timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
         include:
-          - layer: smoke
-            tag: camada_smoke
-          - layer: regressao-funcional
-            tag: camada_regressao_funcional
-          - layer: contrato-api
-            tag: camada_contrato_api
-          - layer: e2e-critica
-            tag: camada_e2e_critica
+          - pipeline: smoke
+            tag: smoke
+            expression: "@smoke and not @blocked and not @bloqueado and not @flaky"
+          - pipeline: regression
+            tag: regression
+            expression: "@regression and not @blocked and not @bloqueado and not @flaky"
+          - pipeline: critical
+            tag: critical
+            expression: "@critical and not @blocked and not @bloqueado and not @flaky"
 
     steps:
       - name: Checkout repository
@@ -47,42 +48,72 @@ jobs:
           java-version: "17"
           cache: maven
 
-      - name: Verify layer has tagged scenarios
-        id: layer_check
+      - name: Verify pipeline has tagged scenarios
+        id: pipeline_check
         run: |
           TAG="@${{ matrix.tag }}"
           if grep -RIn "$TAG" src/test/resources/features; then
             echo "has_tests=true" >> "$GITHUB_OUTPUT"
-            echo "Layer ${{ matrix.layer }}: tagged scenarios found for $TAG"
+            echo "Pipeline ${{ matrix.pipeline }}: tagged scenarios found for $TAG"
           else
             echo "has_tests=false" >> "$GITHUB_OUTPUT"
-            echo "Layer ${{ matrix.layer }}: no tagged scenarios for $TAG (skipping run)"
+            echo "Pipeline ${{ matrix.pipeline }}: no tagged scenarios for $TAG (skipping run)"
           fi
 
-      - name: Run tests for layer
-        if: steps.layer_check.outputs.has_tests == 'true'
+      - name: Run tests for pipeline
+        if: steps.pipeline_check.outputs.has_tests == 'true'
         run: |
-          mvn -B clean test -Dheadless=true -Dmaven.test.failure.ignore=true -Dcucumber.filter.tags="@${{ matrix.tag }}"
+          mvn -B clean test -Dheadless=true -Dmaven.test.failure.ignore=true -Dcucumber.filter.tags="${{ matrix.expression }}"
 
-      - name: Upload layer Surefire reports
-        if: always() && steps.layer_check.outputs.has_tests == 'true'
+      - name: Upload pipeline Surefire reports
+        if: always() && steps.pipeline_check.outputs.has_tests == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: surefire-reports-${{ matrix.layer }}
+          name: surefire-reports-${{ matrix.pipeline }}
           path: target/surefire-reports
           if-no-files-found: ignore
 
-      - name: Upload layer Allure results
-        if: always() && steps.layer_check.outputs.has_tests == 'true'
+      - name: Upload pipeline Allure results
+        if: always() && steps.pipeline_check.outputs.has_tests == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: allure-results-${{ matrix.layer }}
+          name: allure-results-${{ matrix.pipeline }}
           path: allure-results
           if-no-files-found: ignore
 
+  tag-governance:
+    name: BDD tag governance (blocked/flaky)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate governance tags inventory
+        run: |
+          set -euo pipefail
+
+          echo "=== TAG INVENTORY ==="
+          grep -RInE "@(smoke|regression|critical|blocked|bloqueado|flaky)" src/test/resources/features || true
+
+          BLOCKED_COUNT=$(grep -RInE "@blocked|@bloqueado" src/test/resources/features | wc -l || true)
+          FLAKY_COUNT=$(grep -RInE "@flaky" src/test/resources/features | wc -l || true)
+
+          echo "Blocked scenarios found: ${BLOCKED_COUNT}"
+          echo "Flaky scenarios found: ${FLAKY_COUNT}"
+
+          # Governança: informar presença de cenários não elegíveis para pipelines críticos
+          if [ "${BLOCKED_COUNT}" -gt 0 ]; then
+            echo "::warning::Existem cenarios @blocked/@bloqueado. Eles sao excluidos das pipelines smoke/regression/critical."
+          fi
+          if [ "${FLAKY_COUNT}" -gt 0 ]; then
+            echo "::warning::Existem cenarios @flaky. Eles sao excluidos das pipelines smoke/regression/critical."
+          fi
+
   build-and-report:
     name: Build, Test and Publish Allure
-    needs: test-layers
+    needs: [bdd-pipelines, tag-governance]
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -147,7 +178,7 @@ jobs:
         run: rm -rf allure-results allure-report
 
       - name: Run tests
-        run: mvn -B clean test -Dheadless=true -Dmaven.test.failure.ignore=true
+        run: mvn -B clean test -Dheadless=true -Dmaven.test.failure.ignore=true -Dcucumber.filter.tags="not @blocked and not @bloqueado and not @flaky"
 
       - name: Validate Allure results
         run: |
