@@ -63,7 +63,7 @@ jobs:
       - name: Run tests for pipeline
         if: steps.pipeline_check.outputs.has_tests == 'true'
         run: |
-          mvn -B clean test -Dheadless=true -Dmaven.test.failure.ignore=true -Dcucumber.filter.tags="${{ matrix.expression }}"
+          mvn -B clean test -Dheadless=true -Dmaven.test.failure.ignore=true -Dskip.open.allure=true -Dcucumber.filter.tags="${{ matrix.expression }}"
 
       - name: Upload pipeline Surefire reports
         if: always() && steps.pipeline_check.outputs.has_tests == 'true'
@@ -210,7 +210,7 @@ jobs:
         run: rm -rf allure-results allure-report
 
       - name: Run tests
-        run: mvn -B clean test -Dheadless=true -Dmaven.test.failure.ignore=true -Dcucumber.filter.tags="not @blocked and not @bloqueado and not @flaky"
+        run: mvn -B clean test -Dheadless=true -Dmaven.test.failure.ignore=true -Dskip.open.allure=true -Dcucumber.filter.tags="not @blocked and not @bloqueado and not @flaky"
 
       - name: Validate Allure results
         run: |
